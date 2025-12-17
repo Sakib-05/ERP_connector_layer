@@ -1,4 +1,7 @@
+source .venv/bin/activate
+
 to run server
-uvicorn main:app --reload --port 8000 
+
+fastapi dev main.py
 
 use ngrok to create temp public url using computer terminal

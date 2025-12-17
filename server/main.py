@@ -53,5 +53,5 @@ async def verify_signature(request: Request):
 def root():
     return {"message": "Hello World"}
 
-@app.post("/webhook/xero")
+
 
