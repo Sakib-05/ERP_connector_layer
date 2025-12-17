@@ -2,7 +2,7 @@
 .venv/
 
 # Environment variables file
-.env
+server/.env
 
 # Python cache
 __pycache__/
