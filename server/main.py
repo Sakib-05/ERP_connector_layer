@@ -1,5 +1,5 @@
 # modules to import
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from dotenv import dotenv_values
 
 # standard python libraries
@@ -53,5 +53,13 @@ async def verify_signature(request: Request):
 def root():
     return {"message": "Hello World"}
 
+@app.post("/webhooks/xero")
+async def xero_webhook(request: Request):
+    if not await verify_signature(request):
+        raise HTTPException(status_code=401, detail="body signature does not match header signature")
+    print("Xero Webhook received and verified")
+    return {"message": "Xero Webhook received and verified"}
 
+        
+    
 
