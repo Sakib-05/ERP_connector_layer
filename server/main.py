@@ -58,6 +58,23 @@ async def xero_webhook(request: Request):
     if not await verify_signature(request):
         raise HTTPException(status_code=401, detail="body signature does not match header signature")
     print("Xero Webhook received and verified")
+
+    payload = await request.json()
+    print("Request payload json:", payload)
+
+    all_events = payload.get("events", [])
+    for event in all_events:
+        # filter to get only INVOICE events
+        if event.get("eventCategory") == "INVOICE":
+            # UPDATE or CREATE event
+            print("Event type:", event.get("eventType"))
+            # the URL containing the actual information for this event
+            print("Resource URL:", event.get("resourceUrl"))
+            # date and time of the event
+            print("Date time:", event.get("eventDateUtc"))
+            # Id of the tenant
+            print("Tenant Id:", event.get("tenantId"))
+
     return {"message": "Xero Webhook received and verified"}
 
         
