@@ -1,6 +1,7 @@
 # modules to import
-from fastapi import FastAPI, Request, HTTPException
+# from fastapi import FastAPI, Request, HTTPException
 from dotenv import dotenv_values
+from flask import Flask, request, jsonify
 
 # standard python libraries
 import hmac
@@ -9,11 +10,18 @@ import hashlib
 
 config = dotenv_values(".env")
 
-app = FastAPI()
+app = Flask(__name__)
 
-async def verify_signature(request: Request):
+# oauth storing word token
+# verify token
+# fetch data from xero
+
+# store invoice data in mongodb database
+
+
+def verify_signature():
     # body is asynchronous in FastAPI
-    payload = await request.body()
+    payload = request.data
     header_signature = request.headers.get("x-xero-Signature")
 
     webhook_key = config.get("XERO_WEBHOOK_KEY")
@@ -51,18 +59,19 @@ async def verify_signature(request: Request):
 
 @app.get("/")
 def root():
-    return {"message": "Hello World"}
+    return jsonify({"message": "Hello World flask app is running!"})
 
 @app.post("/webhooks/xero")
-async def xero_webhook(request: Request):
-    if not await verify_signature(request):
-        raise HTTPException(status_code=401, detail="body signature does not match header signature")
+def xero_webhook():
+    if not verify_signature():
+        return (jsonify({"error": "body signature does not match header signature"}), 401)
+        # raise HTTPException(status_code=401, detail="body signature does not match header signature")
     print("Xero Webhook received and verified")
 
-    payload = await request.json()
-    print("Request payload json:", payload)
+    payload_dict = request.json
+    print("Request payload json:", payload_dict)
 
-    all_events = payload.get("events", [])
+    all_events = payload_dict.get("events", [])
     for event in all_events:
         # filter to get only INVOICE events
         if event.get("eventCategory") == "INVOICE":
@@ -77,6 +86,7 @@ async def xero_webhook(request: Request):
 
     return {"message": "Xero Webhook received and verified"}
 
-        
-    
 
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8000, debug=True)
+    
