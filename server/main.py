@@ -1,7 +1,10 @@
 # modules to import
-# from fastapi import FastAPI, Request, HTTPException
 from dotenv import dotenv_values
-from flask import Flask, request, jsonify
+# request is sinlgular and its to get data from requests
+from flask import Flask, request, jsonify, redirect
+from urllib.parse import urlencode
+# pay attention, requests is plural and it is a library to make http requests
+import requests
 
 # standard python libraries
 import hmac
@@ -85,6 +88,31 @@ def xero_webhook():
             print("Tenant Id:", event.get("tenantId"))
 
     return {"message": "Xero Webhook received and verified"}
+
+@app.get("/auth/login")
+def redirect_to_xero_login():
+    # these are the values needed in the URL query parameters to redirect to Xero login page and request authorization
+    url_params_dict = {
+    "response_type": "code",
+    "client_id": config.get("XERO_CLIENT_ID"),
+    "redirect_uri": "http://localhost:8000/callback",
+    # scope - refresh token for offline access and read access to accounting API
+    "scope": "offline_access accounting.transactions.read",
+    "state": "123"
+    }
+    query_string = urlencode(url_params_dict)
+    # redirect to Xero login page with the query parameters
+    return redirect(f"https://login.xero.com/identity/connect/authorize?{query_string}")
+
+@app.get("/callback")
+def callback():
+    # get the authorization code from the query parameters, from the http get request
+    authorisation_code = request.args.get("code")
+    print(request)
+    print("Authorisation code:", authorisation_code)
+    
+    return jsonify({"message": "Callback received", "authorisation_code": authorisation_code})
+    
 
 
 if __name__ == "__main__":
