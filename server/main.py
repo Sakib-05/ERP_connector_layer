@@ -110,8 +110,23 @@ def callback():
     authorisation_code = request.args.get("code")
     print(request)
     print("Authorisation code:", authorisation_code)
+
+    # URL from Xero to exchange the authorisation code for access token and refresh token
+    url = "https://identity.xero.com/connect/token"
+
+    headers = {"authorization" : "Basic "+ base64.b64encode((config.get("XERO_CLIENT_ID")+":" + config.get("XERO_CLIENT_SECRET")).encode()).decode()}
+
+    request_body = {
+    "grant_type": "authorization_code",
+    "code" : authorisation_code,
+    "redirect_uri": "http://localhost:8000/callback"
+    }
+
+    r = requests.post(url, headers=headers, data=request_body)
+    print(r.json())
+    print(r.status_code)
     
-    return jsonify({"message": "Callback received", "authorisation_code": authorisation_code})
+    return jsonify({"message": "Callback received", "authorisation_code": authorisation_code, "token_response": r.json()})
     
 
 
