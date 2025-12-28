@@ -1,4 +1,5 @@
 # modules to import
+from sqlite3 import connect
 from dotenv import dotenv_values
 # request is sinlgular and its to get data from requests
 from flask import Flask, request, jsonify, redirect
@@ -20,6 +21,11 @@ app = Flask(__name__)
 # fetch data from xero
 
 # store invoice data in mongodb database
+
+authorisation_code = ""
+access_token = ""
+refresh_token = ""
+tenant_id = ""
 
 
 def verify_signature():
@@ -113,22 +119,26 @@ def callback():
 
     # URL from Xero to exchange the authorisation code for access token and refresh token
     url = "https://identity.xero.com/connect/token"
-
+    # Xero requires the request to have Basic Auth with client id and client secret
     headers = {"authorization" : "Basic "+ base64.b64encode((config.get("XERO_CLIENT_ID")+":" + config.get("XERO_CLIENT_SECRET")).encode()).decode()}
-
+    # request body parameters
     request_body = {
     "grant_type": "authorization_code",
     "code" : authorisation_code,
     "redirect_uri": "http://localhost:8000/callback"
     }
-
-    r = requests.post(url, headers=headers, data=request_body)
-    print(r.json())
-    print(r.status_code)
+    # make the post request to exchange the authorisation code for access token and refresh token
+    token_request_response = requests.post(url, headers=headers, data=request_body)
+    access_token = token_request_response.json().get("access_token")
+    refresh_token = token_request_response.json().get("refresh_token")
     
-    return jsonify({"message": "Callback received", "authorisation_code": authorisation_code, "token_response": r.json()})
+    # use the access token to get the connections (tenants) associated with this Xero app
+    headers = {"Authorization": "Bearer " + access_token, "Content-Type": "application/json"}
+    connections_request_response = requests.get("https://api.xero.com/connections", headers=headers)
+    connections = connections_request_response.json()
     
-
+    return jsonify({"message": "Callback received", "authorisation_code": authorisation_code, "access_token": access_token, "connections": connections})
+    
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)
