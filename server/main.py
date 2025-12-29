@@ -22,10 +22,7 @@ app = Flask(__name__)
 
 # store invoice data in mongodb database
 
-authorisation_code = ""
-access_token = ""
-refresh_token = ""
-tenant_id = ""
+
 
 
 def verify_signature():
@@ -68,6 +65,7 @@ def verify_signature():
 
 @app.get("/")
 def root():
+    print(config)
     return jsonify({"message": "Hello World flask app is running!"})
 
 @app.post("/webhooks/xero")
@@ -112,10 +110,9 @@ def redirect_to_xero_login():
 
 @app.get("/callback")
 def callback():
-    # get the authorization code from the query parameters, from the http get request
+    # get the authorization code from the query parameters, from the http get request. Store it in the config dictionary
     authorisation_code = request.args.get("code")
-    print(request)
-    print("Authorisation code:", authorisation_code)
+    config["AUTH_CODE"] = authorisation_code
 
     # URL from Xero to exchange the authorisation code for access token and refresh token
     url = "https://identity.xero.com/connect/token"
@@ -131,12 +128,28 @@ def callback():
     token_request_response = requests.post(url, headers=headers, data=request_body)
     access_token = token_request_response.json().get("access_token")
     refresh_token = token_request_response.json().get("refresh_token")
+
+    # store the tokens in the config dictionary
+    config["ACCESS_TOKEN"] = access_token
+    config["REFRESH_TOKEN"] = refresh_token
     
     # use the access token to get the connections (tenants) associated with this Xero app
     headers = {"Authorization": "Bearer " + access_token, "Content-Type": "application/json"}
     connections_request_response = requests.get("https://api.xero.com/connections", headers=headers)
     connections = connections_request_response.json()
-    
+
+    # store the tenant id in the config dictionary
+    config["TENANT_ID"] = connections[0].get("tenantId")
+
+
+    # calling accounting API to get list of invoices for the tenant
+    tenant_id = config.get("TENANT_ID")
+    headers = {"Authorization": "Bearer " + access_token, "accept": "application/json", "xero-tenant-id": tenant_id}
+
+    invoices_request_response = requests.get("https://api.xero.com/api.xro/2.0/Invoices", headers=headers)
+    print("get invoices response (only a sinlge invoice):", invoices_request_response.json()["Invoices"][0])
+
+
     return jsonify({"message": "Callback received", "authorisation_code": authorisation_code, "access_token": access_token, "connections": connections})
     
 
