@@ -10,7 +10,7 @@ client = MongoClient(mongodb_uri)
 # save access and refresh tokens to the database for persisency and not having to do OAuth flow every time
 def save_tokens(access_token, refresh_token=None):
     try:
-        database = client["TaxStar-Dev-Cluster"]
+        database = client["TaxStar-database"]
         tokens_collection = database["tokens"]
 
         # insert token if not present, else update existing access token
@@ -34,7 +34,7 @@ def save_tokens(access_token, refresh_token=None):
 # fetch access and refresh tokens from the database
 def get_tokens():
     try:
-        database = client["TaxStar-Dev-Cluster"]
+        database = client["TaxStar-database"]
         tokens_collection = database["tokens"]
         access_token_document = tokens_collection.find_one({"_id": "access"})
         access_token = access_token_document["access_token"] if access_token_document else None
@@ -52,7 +52,7 @@ def get_tokens():
 # save invoice data to the database by passing invoice json object
 def save_invoice(invoice_data):
     try:
-        database = client["TaxStar-Dev-Cluster"]
+        database = client["TaxStar-database"]
         invoices_collection = database["invoices"]
         invoices_collection.insert_one(invoice_data)
     except Exception as e:
@@ -61,7 +61,7 @@ def save_invoice(invoice_data):
 # fetch all invoices from the database
 def get_invoices():
     try:
-        database = client["TaxStar-Dev-Cluster"]
+        database = client["TaxStar-database"]
         invoices_collection = database["invoices"]
         invoices = list(invoices_collection.find())
         return invoices
@@ -69,3 +69,4 @@ def get_invoices():
     except Exception as e:
         print(f"An error occurred while fetching invoices: {e}")
         return []
+
