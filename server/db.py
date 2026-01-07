@@ -8,25 +8,21 @@ mongodb_uri = config.get("MONGODB_URI")
 client = MongoClient(mongodb_uri)
 
 # save access and refresh tokens to the database for persisency and not having to do OAuth flow every time
-def save_tokens(access_token, refresh_token=None):
+def save_tokens_data(access_token, refresh_token, tenant_id = None):
     try:
         database = client["TaxStar-database"]
         tokens_collection = database["tokens"]
 
-        # insert token if not present, else update existing access token
-        access_token_document = tokens_collection.find_one({"_id": "access"})
-        if access_token_document:
-            tokens_collection.update_one({"_id": "access"}, {"$set": {"access_token": access_token}})
-        else:
-            tokens_collection.insert_one({"_id": "access", "access_token": access_token})
+        update_data = {
+            "access_token": access_token,
+            "refresh_token": refresh_token
+        }
+        if tenant_id:
+            update_data["tenant_id"] = tenant_id
         
-        # insert refresh token if not present, else update existing refresh token
-        if refresh_token is not None:
-            refresh_token_document = tokens_collection.find_one({"_id": "refresh"})
-            if refresh_token_document:
-                tokens_collection.update_one({"_id": "refresh"}, {"$set": {"refresh_token": refresh_token}})
-            else:
-                tokens_collection.insert_one({"_id": "refresh", "refresh_token": refresh_token})
+        tokens_collection.update_one({"_id": "xero_auth_tokens"}, {"$set": update_data}, upsert=True)
+
+        
     
     except Exception as e:
         print(f"An error occurred while saving tokens: {e}")
@@ -36,14 +32,16 @@ def get_tokens():
     try:
         database = client["TaxStar-database"]
         tokens_collection = database["tokens"]
-        access_token_document = tokens_collection.find_one({"_id": "access"})
-        access_token = access_token_document["access_token"] if access_token_document else None
-      
-        refresh_token_document = tokens_collection.find_one({"_id": "refresh"})
-        refresh_token = refresh_token_document["refresh_token"] if refresh_token_document else None
+        saved_tokens_data = tokens_collection.find_one({"_id": "xero_auth_tokens"})
 
-        # return tuple of access and refresh tokens
-        return access_token, refresh_token
+        if saved_tokens_data:
+            access_token = saved_tokens_data["access_token"]
+            refresh_token = saved_tokens_data["refresh_token"]
+            # return the tokens
+            return access_token, refresh_token
+        else:
+            print("No tokens found in the database.")
+            return None, None
     
     except Exception as e:
         print(f"An error occurred while getting tokens: {e}")
@@ -54,7 +52,11 @@ def save_invoice(invoice_data):
     try:
         database = client["TaxStar-database"]
         invoices_collection = database["invoices"]
-        invoices_collection.insert_one(invoice_data)
+
+        invoice_id = invoice_data.get("InvoiceID")
+        # update existing invoice if InvoiceID exists, else insert new invoice
+        invoices_collection.replace_one({"InvoiceID": invoice_id}, invoice_data, upsert=True)
+
     except Exception as e:
         print(f"An error occurred while saving invoice: {e}")
 
