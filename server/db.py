@@ -37,11 +37,12 @@ def get_tokens():
         if saved_tokens_data:
             access_token = saved_tokens_data["access_token"]
             refresh_token = saved_tokens_data["refresh_token"]
+            tenant_id = saved_tokens_data.get("tenant_id")
             # return the tokens
-            return access_token, refresh_token
+            return access_token, refresh_token, tenant_id
         else:
             print("No tokens found in the database.")
-            return None, None
+            return None, None, None
     
     except Exception as e:
         print(f"An error occurred while getting tokens: {e}")

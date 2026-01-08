@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 # pay attention, requests is plural and it is a library to make http requests
 import requests
 # import database functions
-from server.db import save_invoice, get_invoices, save_tokens, get_tokens
+from db import save_invoice, get_invoices, save_tokens_data, get_tokens
 
 # standard python libraries
 import hmac
@@ -66,7 +66,6 @@ def verify_signature():
 
 @app.get("/")
 def root():
-    print(config)
     return jsonify({"message": "Hello World flask app is running!"})
 
 @app.post("/webhooks/xero")
@@ -90,16 +89,27 @@ def xero_webhook():
             # date and time of the event
             print("Date time:", event.get("eventDateUtc"))
             # Id of the tenant
-            tenant_id = event.get("tenantId")
-            print("Tenant Id:", tenant_id)
+            print("Tenant Id:", event.get("tenantId", "Not provided"))
 
             # GET request to the resource URL to fetch the actual invoice data for the correct tenant
-            access_token, _ = get_tokens()
+            access_token, refresh_token, tenant_id= get_tokens()
             headers = {"Authorization": "Bearer " + access_token, "accept": "application/json", "xero-tenant-id": tenant_id}
 
             try:
                 invoices_request_response = requests.get(event.get("resourceUrl"), headers=headers)
-                invoice_data = invoices_request_response.json()
+
+                if invoices_request_response.status_code == 401:
+                    print("Access token expired, Access token is being refreshed")
+                    # get new access token, which also updates the tokens in the database
+                    access_token = refresh_access_token(refresh_token)
+                    # update the headers with the new access token
+                    headers["Authorization"] = "Bearer " + access_token
+                    # retry the GET request to fetch invoice data
+                    invoices_request_response = requests.get(event.get("resourceUrl"), headers=headers)
+                
+                # the response wraps the invoice data in an "Invoices" array, which is why the invoices field has to be first called
+                invoice_data = invoices_request_response.json()["Invoices"][0]
+
                 print("Invoice data fetched from Xero API:", invoice_data)
 
                 # save the invoice data to the database
@@ -109,6 +119,28 @@ def xero_webhook():
 
 
     return {"message": "Xero Webhook received and new invoice added to the database"}
+
+# function to get new access token when previous one expires
+def refresh_access_token(refresh_token):
+    # authorization header with client id and client secret
+    header = {"authorization" : "Basic "+ base64.b64encode((config.get("XERO_CLIENT_ID")+":" + config.get("XERO_CLIENT_SECRET")).encode()).decode()}
+
+    # request body parameters
+    request_body = {
+        "grant_type": "refresh_token",
+        "refresh_token" : refresh_token
+    }
+
+    # POST to the token endpoint
+    token_request_response = requests.post("https://identity.xero.com/connect/token", headers=header, data=request_body)
+    access_token = token_request_response.json().get("access_token")
+    refresh_token = token_request_response.json().get("refresh_token")
+    # store the new pair of tokens in the database
+    save_tokens_data(access_token, refresh_token)
+
+    # return the new access token
+    return access_token
+
 
 @app.get("/auth/login")
 def redirect_to_xero_login():
@@ -145,16 +177,16 @@ def callback():
     token_request_response = requests.post(url, headers=headers, data=request_body)
     access_token = token_request_response.json().get("access_token")
     refresh_token = token_request_response.json().get("refresh_token")
-
-    # store the tokens in the TaxStar database for persisency
-    save_tokens(access_token, refresh_token)
-
-
     
     # use the access token to get the connections (tenants) associated with this Xero app
     headers = {"Authorization": "Bearer " + access_token, "Content-Type": "application/json"}
     connections_request_response = requests.get("https://api.xero.com/connections", headers=headers)
     connections = connections_request_response.json()
+
+    # store the tokens in the TaxStar database for persisency
+    save_tokens_data(access_token, refresh_token, tenant_id=connections[1].get("tenantId"))
+
+
 
     return jsonify({"message": "Callback received", "authorisation_code": authorisation_code, "access_token": access_token, "connections": connections})
     
