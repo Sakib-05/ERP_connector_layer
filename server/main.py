@@ -197,7 +197,7 @@ def callback():
     connections = connections_request_response.json()
 
     # store the tokens in the TaxStar database for persisency
-    save_tokens_data(access_token, refresh_token, tenant_id=connections[1].get("tenantId"))
+    save_tokens_data(access_token, refresh_token, tenant_id=connections[0].get("tenantId"))
 
 
 
