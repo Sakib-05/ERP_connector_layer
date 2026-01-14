@@ -17,11 +17,8 @@ config = dotenv_values(".env")
 
 app = Flask(__name__)
 
-# oauth storing word token
-# verify token
-# fetch data from xero
 
-# store invoice data in mongodb database
+# host using github education domain
 
 
 
