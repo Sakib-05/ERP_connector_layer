@@ -119,12 +119,10 @@ def root():
 #     return {"message": "Xero Webhook received and new invoice added to the database"}
 def xero_webhook():
     is_valid = verify_signature()
-    print(f"Webhook received. Signature valid: {is_valid}")
-    
-    payload_dict = request.json
-    print("Payload:", payload_dict)
-    
-    # Always return 200 OK (even if signature fails)
+    if not is_valid:
+        return jsonify({"error": "body signature does not match header signature"}), 401
+    print("Xero Webhook received and verified")
+
     return jsonify({"message": "Webhook received"}), 200
 
 
