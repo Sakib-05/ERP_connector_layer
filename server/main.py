@@ -146,7 +146,7 @@ def redirect_to_xero_login():
     url_params_dict = {
     "response_type": "code",
     "client_id": config.get("XERO_CLIENT_ID"),
-    "redirect_uri": "http://localhost:8000/callback",
+    "redirect_uri": "https://evening-thicket-01409-436e1b971897.herokuapp.com/callback",
     # scope - refresh token for offline access and read access to accounting API
     "scope": "offline_access accounting.transactions.read",
     "state": "123"
@@ -169,7 +169,7 @@ def callback():
     request_body = {
     "grant_type": "authorization_code",
     "code" : authorisation_code,
-    "redirect_uri": "http://localhost:8000/callback"
+    "redirect_uri": "https://evening-thicket-01409-436e1b971897.herokuapp.com/callback"
     }
     # make the post request to exchange the authorisation code for access token and refresh token
     token_request_response = requests.post(url, headers=headers, data=request_body)
