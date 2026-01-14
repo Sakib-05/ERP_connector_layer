@@ -1,4 +1,5 @@
 # modules to import
+import os
 from dotenv import dotenv_values
 # request is sinlgular and its to get data from requests
 from flask import Flask, request, jsonify, redirect
@@ -189,5 +190,6 @@ def callback():
     
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=True)
+    port = int(os.getenv("PORT", "8000"))
+    app.run(host="0.0.0.0", port=port, debug=False)
     
