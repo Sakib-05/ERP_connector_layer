@@ -14,7 +14,12 @@ import hmac
 import base64
 import hashlib
 
-config = dotenv_values(".env")
+# Load from .env file locally, fall back to system environment on Heroku
+if os.path.exists(".env"):
+    config = dotenv_values(".env")
+else:
+    config = dict(os.environ)
+
 
 app = Flask(__name__)
 
