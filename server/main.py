@@ -117,13 +117,7 @@ def root():
 
 
 #     return {"message": "Xero Webhook received and new invoice added to the database"}
-@app.post("/webhooks/xero")
 def xero_webhook():
-    is_valid = verify_signature()
-    print(f"Webhook received. Signature valid: {is_valid}")
-    
-    payload_dict = request.json
-    print("Payload:", payload_dict)
     
     # Always return 200 OK (even if signature fails)
     return jsonify({"message": "Webhook received"}), 200
