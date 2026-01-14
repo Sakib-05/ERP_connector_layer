@@ -1,9 +1,14 @@
+import os
 from pymongo import MongoClient
 from dotenv import dotenv_values
 
 
 # MongoDB URI from .env file and setup client to get database
-config = dotenv_values(".env")
+if os.path.exists(".env"):
+    config = dotenv_values(".env")
+else:
+    config = dict(os.environ)
+
 mongodb_uri = config.get("MONGODB_URI")
 client = MongoClient(mongodb_uri)
 
