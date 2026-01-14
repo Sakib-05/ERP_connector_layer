@@ -67,56 +67,69 @@ def root():
     return jsonify({"message": "Hello World flask app is running!"})
 
 @app.post("/webhooks/xero")
-def xero_webhook():
-    if not verify_signature():
-        return (jsonify({"error": "body signature does not match header signature"}), 401)
-        # raise HTTPException(status_code=401, detail="body signature does not match header signature")
-    print("Xero Webhook received and verified")
+# def xero_webhook():
+#     if not verify_signature():
+#         return (jsonify({"error": "body signature does not match header signature"}), 401)
+#         # raise HTTPException(status_code=401, detail="body signature does not match header signature")
+#     print("Xero Webhook received and verified")
 
-    payload_dict = request.json
-    print("Request payload json:", payload_dict)
+#     payload_dict = request.json
+#     print("Request payload json:", payload_dict)
 
-    all_events = payload_dict.get("events", [])
-    for event in all_events:
-        # filter to get only INVOICE events
-        if event.get("eventCategory") == "INVOICE":
-            # UPDATE or CREATE event
-            print("Event type:", event.get("eventType"))
-            # the URL containing the actual information for this event
-            print("Resource URL:", event.get("resourceUrl"))
-            # date and time of the event
-            print("Date time:", event.get("eventDateUtc"))
-            # Id of the tenant
-            print("Tenant Id:", event.get("tenantId", "Not provided"))
+#     all_events = payload_dict.get("events", [])
+#     for event in all_events:
+#         # filter to get only INVOICE events
+#         if event.get("eventCategory") == "INVOICE":
+#             # UPDATE or CREATE event
+#             print("Event type:", event.get("eventType"))
+#             # the URL containing the actual information for this event
+#             print("Resource URL:", event.get("resourceUrl"))
+#             # date and time of the event
+#             print("Date time:", event.get("eventDateUtc"))
+#             # Id of the tenant
+#             print("Tenant Id:", event.get("tenantId", "Not provided"))
 
-            # GET request to the resource URL to fetch the actual invoice data for the correct tenant
-            access_token, refresh_token, tenant_id= get_tokens()
-            headers = {"Authorization": "Bearer " + access_token, "accept": "application/json", "xero-tenant-id": tenant_id}
+#             # GET request to the resource URL to fetch the actual invoice data for the correct tenant
+#             access_token, refresh_token, tenant_id= get_tokens()
+#             headers = {"Authorization": "Bearer " + access_token, "accept": "application/json", "xero-tenant-id": tenant_id}
 
-            try:
-                invoices_request_response = requests.get(event.get("resourceUrl"), headers=headers)
+#             try:
+#                 invoices_request_response = requests.get(event.get("resourceUrl"), headers=headers)
 
-                if invoices_request_response.status_code == 401:
-                    print("Access token expired, Access token is being refreshed")
-                    # get new access token, which also updates the tokens in the database
-                    access_token = refresh_access_token(refresh_token)
-                    # update the headers with the new access token
-                    headers["Authorization"] = "Bearer " + access_token
-                    # retry the GET request to fetch invoice data
-                    invoices_request_response = requests.get(event.get("resourceUrl"), headers=headers)
+#                 if invoices_request_response.status_code == 401:
+#                     print("Access token expired, Access token is being refreshed")
+#                     # get new access token, which also updates the tokens in the database
+#                     access_token = refresh_access_token(refresh_token)
+#                     # update the headers with the new access token
+#                     headers["Authorization"] = "Bearer " + access_token
+#                     # retry the GET request to fetch invoice data
+#                     invoices_request_response = requests.get(event.get("resourceUrl"), headers=headers)
                 
-                # the response wraps the invoice data in an "Invoices" array, which is why the invoices field has to be first called
-                invoice_data = invoices_request_response.json()["Invoices"][0]
+#                 # the response wraps the invoice data in an "Invoices" array, which is why the invoices field has to be first called
+#                 invoice_data = invoices_request_response.json()["Invoices"][0]
 
-                print("Invoice data fetched from Xero API:", invoice_data)
+#                 print("Invoice data fetched from Xero API:", invoice_data)
 
-                # save the invoice data to the database
-                save_invoice(invoice_data)
-            except Exception as e:
-                print(f"An error occurred while fetching invoice data: {e}")
+#                 # save the invoice data to the database
+#                 save_invoice(invoice_data)
+#             except Exception as e:
+#                 print(f"An error occurred while fetching invoice data: {e}")
 
 
-    return {"message": "Xero Webhook received and new invoice added to the database"}
+#     return {"message": "Xero Webhook received and new invoice added to the database"}
+@app.post("/webhooks/xero")
+def xero_webhook():
+    is_valid = verify_signature()
+    print(f"Webhook received. Signature valid: {is_valid}")
+    
+    payload_dict = request.json
+    print("Payload:", payload_dict)
+    
+    # Always return 200 OK (even if signature fails)
+    return jsonify({"message": "Webhook received"}), 200
+
+
+
 
 # function to get new access token when previous one expires
 def refresh_access_token(refresh_token):
