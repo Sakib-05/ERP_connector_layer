@@ -11,3 +11,9 @@ __pycache__/
 # IDE and editor specific files
 .idea/
 .vscode/
+
+# Frontend
+client/node_modules/
+client/.next/
+client/out/
+client/.env.local

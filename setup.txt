@@ -5,3 +5,5 @@ to run server
 fastapi dev main.py
 
 use ngrok to create temp public url using computer terminal
+
+making a terminal for the live deployed app: heroku logs --tail
