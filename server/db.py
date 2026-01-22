@@ -71,7 +71,10 @@ def get_invoices():
     try:
         database = client["TaxStar-database"]
         invoices_collection = database["invoices"]
-        invoices = invoices_collection.find()
+        invoices = list(invoices_collection.find())
+        # Convert ObjectId to string for JSON serialization
+        for invoice in invoices:
+            invoice["_id"] = str(invoice["_id"])
         return invoices
     
     except Exception as e:
