@@ -196,7 +196,11 @@ def callback():
 
 
     return jsonify({"message": "Callback received", "authorisation_code": authorisation_code, "access_token": access_token, "connections": connections})
-    
+
+@app.get("/invoices")
+def fetch_invoices():
+    invoices = get_invoices()
+    return jsonify(invoices)
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "8000"))

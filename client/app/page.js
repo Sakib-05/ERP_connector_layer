@@ -1,7 +1,28 @@
-
+'use client'
+import { useState } from 'react';
 
 export default function Home() {
+  const [invoices, setInvoices] = useState([]);
+
+  async function loadInvoices() {
+    const response = await fetch('https://evening-thicket-01409-436e1b971897.herokuapp.com/invoices');
+    console.log('Response:', response);
+    setInvoices(data);
+  }
+
+
+
+
+
   return (
-    <div>This is the ERP connector layer frontend</div>
+    <>
+      <div>This is the ERP connector layer frontend</div>
+      <button onClick={loadInvoices}>Load Invoices</button>
+      <ul>
+        {invoices.map((invoice) => (
+          <li key={invoice.id}>{invoice.description} - {invoice.amount}</li>
+        ))}
+      </ul>
+    </> 
   );
 }
