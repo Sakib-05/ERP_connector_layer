@@ -14,6 +14,10 @@ import hmac
 import base64
 import hashlib
 
+# CORS for cross origin requests
+from flask_cors import CORS
+
+
 # Load from .env file locally, fall back to system environment on Heroku
 if os.path.exists(".env"):
     config = dotenv_values(".env")
@@ -22,6 +26,7 @@ else:
 
 
 app = Flask(__name__)
+CORS(app)
 
 
 # host using github education domain
