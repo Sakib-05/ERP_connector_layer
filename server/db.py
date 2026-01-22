@@ -71,7 +71,7 @@ def get_invoices():
     try:
         database = client["TaxStar-database"]
         invoices_collection = database["invoices"]
-        invoices = list(invoices_collection.find())
+        invoices = invoices_collection.find()
         return invoices
     
     except Exception as e:

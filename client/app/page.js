@@ -6,7 +6,8 @@ export default function Home() {
 
   async function loadInvoices() {
     const response = await fetch('https://evening-thicket-01409-436e1b971897.herokuapp.com/invoices');
-    console.log('Response:', response);
+    const data = await response.json();
+    console.log('Response:', data);
     setInvoices(data);
   }
 
