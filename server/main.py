@@ -26,7 +26,7 @@ else:
 
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/invoices": {"origins": "http://localhost:3000"}})
 
 
 # host using github education domain
@@ -158,12 +158,12 @@ def refresh_access_token(refresh_token):
 def redirect_to_xero_login():
     # these are the values needed in the URL query parameters to redirect to Xero login page and request authorization
     url_params_dict = {
-    "response_type": "code",
-    "client_id": config.get("XERO_CLIENT_ID"),
-    "redirect_uri": "https://evening-thicket-01409-436e1b971897.herokuapp.com/callback",
-    # scope - refresh token for offline access and read access to accounting API
-    "scope": "offline_access accounting.transactions.read",
-    "state": "123"
+        "response_type": "code",
+        "client_id": config.get("XERO_CLIENT_ID"),
+        "redirect_uri": "https://evening-thicket-01409-436e1b971897.herokuapp.com/callback",
+        # scope - refresh token for offline access and read access to accounting API
+        "scope": "offline_access accounting.transactions.read",
+        "state": "123"
     }
     query_string = urlencode(url_params_dict)
     # redirect to Xero login page with the query parameters
@@ -181,9 +181,9 @@ def callback():
     headers = {"authorization" : "Basic "+ base64.b64encode((config.get("XERO_CLIENT_ID")+":" + config.get("XERO_CLIENT_SECRET")).encode()).decode()}
     # request body parameters
     request_body = {
-    "grant_type": "authorization_code",
-    "code" : authorisation_code,
-    "redirect_uri": "https://evening-thicket-01409-436e1b971897.herokuapp.com/callback"
+        "grant_type": "authorization_code",
+        "code" : authorisation_code,
+        "redirect_uri": "https://evening-thicket-01409-436e1b971897.herokuapp.com/callback"
     }
     # make the post request to exchange the authorisation code for access token and refresh token
     token_request_response = requests.post(url, headers=headers, data=request_body)

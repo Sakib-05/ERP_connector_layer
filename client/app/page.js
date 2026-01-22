@@ -21,7 +21,10 @@ export default function Home() {
       <button onClick={loadInvoices}>Load Invoices</button>
       <ul>
         {invoices.map((invoice) => (
-          <li key={invoice.id}>{invoice.description} - {invoice.amount}</li>
+          <li key={invoice._id}>
+            <p>ivoice id = {invoice._id}</p>
+            <p> amount = {invoice.AmountDue}</p>
+          </li>
         ))}
       </ul>
     </> 
