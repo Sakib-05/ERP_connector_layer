@@ -11,6 +11,8 @@ __pycache__/
 # IDE and editor specific files
 .idea/
 .vscode/
+# ingore prettier config
+.prettierc
 
 # Frontend
 client/node_modules/
