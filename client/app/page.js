@@ -1,5 +1,5 @@
 "use client";
-import { useState, Fragment } from "react";
+import { useState, Fragment, useEffect } from "react";
 
 export default function Home() {
   const [invoices, setInvoices] = useState([]);
@@ -10,6 +10,9 @@ export default function Home() {
     console.log("Response:", data);
     setInvoices(data);
   }
+  useEffect(() => {
+    loadInvoices();
+  }, []);
 
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -23,10 +26,12 @@ export default function Home() {
     return `${month}, ${day}, ${year}`;
   }
 
+  const colStyle = { fontWeight: "bold", paddingLeft: "6px" };
+  const rowStyle = { fontFamily: "Arial, sans-serif", margin: 0, paddingLeft: "6px" };
+
   return (
     <>
       <div>This is the ERP connector layer frontend</div>
-      <button onClick={loadInvoices}>Load Invoices</button>
       {/* columns */}
       {/* Name, SentToContact (true/false need ot change to sent/not sent), InvoiceNumber, Reference, DateString, [CurrencyCode,AmountDue,Total, TotalTax] */}
       <div
@@ -52,24 +57,23 @@ export default function Home() {
             padding: "6px 0",
             fontFamily: "Arial, sans-serif",
           }}>
-          <div style={{ fontWeight: "bold", paddingLeft: "6px" }}>Contant</div>
-          <div style={{ fontWeight: "bold", paddingLeft: "6px" }}>status</div>
-          <div style={{ fontWeight: "bold", paddingLeft: "6px" }}>InvoiceNumber</div>
-          <div style={{ fontWeight: "bold", paddingLeft: "6px" }}>Reference</div>
-          <div style={{ fontWeight: "bold", paddingLeft: "6px" }}>Received Date</div>
-          <div style={{ fontWeight: "bold", paddingLeft: "6px" }}>View</div>
+          <div style={colStyle}>Contact</div>
+          <div style={colStyle}>status</div>
+          <div style={colStyle}>InvoiceNumber</div>
+          <div style={colStyle}>Reference</div>
+          <div style={colStyle}>Received Date</div>
+          <div style={colStyle}>View</div>
         </div>
 
         {invoices.map(invoice => (
           <Fragment key={invoice.InvoiceID}>
-            <p style={{ fontFamily: "Arial, sans-serif", margin: 0, paddingLeft: "6px" }}>{invoice.Contact.Name}</p>
-            <p style={{ fontFamily: "Arial, sans-serif", margin: 0, paddingLeft: "6px" }}>{invoice.SentToContact ? "Sent" : "Not Sent"}</p>
-            <p style={{ fontFamily: "Arial, sans-serif", margin: 0, paddingLeft: "6px" }}>{invoice.InvoiceNumber}</p>
-            <p style={{ fontFamily: "Arial, sans-serif", margin: 0, paddingLeft: "6px" }}>{invoice.Reference}</p>
-            <p style={{ fontFamily: "Arial, sans-serif", margin: 0, paddingLeft: "6px", margin: 0, paddingLeft: "6px" }}>
+            <p style={rowStyle}>{invoice.Contact.Name}</p>
+            <p style={rowStyle}>{invoice.SentToContact ? "Sent" : "Not Sent"}</p>
+            <p style={rowStyle}>{invoice.InvoiceNumber}</p>
+            <p style={rowStyle}>
               {invoice.Reference ? invoice.Reference : "No Reference"}
             </p>
-            <p style={{ fontFamily: "Arial, sans-serif", margin: 0, paddingLeft: "6px" }}>{formatDate(invoice.DateString)}</p>
+            <p style={rowStyle}>{formatDate(invoice.DateString)}</p>
             <div style={{ paddingLeft: "6px" }}>
               <p style={{ fontFamily: "Arial, sans-serif", margin: 0 }}>
                 {invoice.CurrencyCode} {invoice.AmountDue}
