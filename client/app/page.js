@@ -3,12 +3,25 @@ import { useState, Fragment, useEffect } from "react";
 
 export default function Home() {
   const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
 
   async function loadInvoices() {
-    const response = await fetch("https://evening-thicket-01409-436e1b971897.herokuapp.com/invoices");
-    const data = await response.json();
-    console.log("Response:", data);
-    setInvoices(data);
+    try {
+      const response = await fetch("https://evening-thicket-01409-436e1b971897.herokuapp.com/invoices");
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log("Response:", data);
+      setInvoices(data);
+    } catch (err) {
+      setError(err.message);
+      console.error("Failed to load invoices:", err);
+    } finally {
+      setLoading(false);
+    }
   }
   useEffect(() => {
     loadInvoices();
@@ -29,9 +42,16 @@ export default function Home() {
   const colStyle = { fontWeight: "bold", paddingLeft: "6px" };
   const rowStyle = { fontFamily: "Arial, sans-serif", margin: 0, paddingLeft: "6px" };
 
+  if (loading) {
+    return <h1 style={{ padding: "10px", fontFamily: "Arial, sans-serif" }}>Loading...</h1>;
+  }
+  if (error) {
+    return <h1 style={{ padding: "10px", fontFamily: "Arial, sans-serif", color: "white", backgroundColor: "red"}}>Error: {error}</h1>;
+  }
+
   return (
     <>
-      <div>This is the ERP connector layer frontend</div>
+      <h1 style={{fontFamily: "Arial, sans-serif",}}>This is the ERP connector layer frontend</h1>
       {/* columns */}
       {/* Name, SentToContact (true/false need ot change to sent/not sent), InvoiceNumber, Reference, DateString, [CurrencyCode,AmountDue,Total, TotalTax] */}
       <div
@@ -70,9 +90,7 @@ export default function Home() {
             <p style={rowStyle}>{invoice.Contact.Name}</p>
             <p style={rowStyle}>{invoice.SentToContact ? "Sent" : "Not Sent"}</p>
             <p style={rowStyle}>{invoice.InvoiceNumber}</p>
-            <p style={rowStyle}>
-              {invoice.Reference ? invoice.Reference : "No Reference"}
-            </p>
+            <p style={rowStyle}>{invoice.Reference ? invoice.Reference : "No Reference"}</p>
             <p style={rowStyle}>{formatDate(invoice.DateString)}</p>
             <div style={{ paddingLeft: "6px" }}>
               <p style={{ fontFamily: "Arial, sans-serif", margin: 0 }}>
