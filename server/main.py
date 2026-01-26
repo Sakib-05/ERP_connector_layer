@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 # pay attention, requests is plural and it is a library to make http requests
 import requests
 # import database functions
-from db import save_invoice, get_invoices, save_tokens_data, get_tokens
+from db import get_all_tenants, save_invoice, get_invoices, save_tokens_data, get_tokens
 
 # standard python libraries
 import hmac
@@ -26,7 +26,9 @@ else:
 
 
 app = Flask(__name__)
-CORS(app, resources={r"/invoices": {"origins": "http://localhost:3000"}})
+# access to invoices and tenants
+CORS(app, resources={r"/invoices/*": {"origins": "http://localhost:3000"}, 
+                     r"/tenants": {"origins": "http://localhost:3000"}})
 
 
 # host using github education domain
@@ -100,7 +102,8 @@ def xero_webhook():
             print("Tenant Id:", event.get("tenantId", "Not provided"))
 
             # GET request to the resource URL to fetch the actual invoice data for the correct tenant
-            access_token, refresh_token, tenant_id= get_tokens()
+            access_token, refresh_token= get_tokens()
+            tenant_id = event.get("tenantId", "")
             headers = {"Authorization": "Bearer " + access_token, "accept": "application/json", "xero-tenant-id": tenant_id}
 
             try:
@@ -117,6 +120,8 @@ def xero_webhook():
                 
                 # the response wraps the invoice data in an "Invoices" array, which is why the invoices field has to be first called
                 invoice_data = invoices_request_response.json()["Invoices"][0]
+                # add tenant_id to the invoice data for filterting later
+                invoice_data["tenantId"] = tenant_id
 
                 print("Invoice data fetched from Xero API:", invoice_data)
 
@@ -148,7 +153,7 @@ def refresh_access_token(refresh_token):
     access_token = token_request_response.json().get("access_token")
     refresh_token = token_request_response.json().get("refresh_token")
     # store the new pair of tokens in the database
-    save_tokens_data(access_token, refresh_token)
+    save_tokens_data(access_token, refresh_token, get_all_tenants())
 
     # return the new access token
     return access_token
@@ -194,18 +199,38 @@ def callback():
     headers = {"Authorization": "Bearer " + access_token, "Content-Type": "application/json"}
     connections_request_response = requests.get("https://api.xero.com/connections", headers=headers)
     connections = connections_request_response.json()
+    tenants_list = [
+        {
+            "tenantId": connection.get("tenantId"),
+            "tenantName": connection.get("tenantName"),
+            "tenantType": connection.get("tenantType")
+        }
+        for connection in connections
+    ]
 
     # store the tokens in the TaxStar database for persisency
-    save_tokens_data(access_token, refresh_token, tenant_id=connections[0].get("tenantId"))
+    save_tokens_data(access_token, refresh_token, tenants_list)
+
+    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
+    return redirect(f"{frontend_url}/myTenants")
+
+@app.get("/tenants")
+def get_tenants():
+    connected_tenants = get_all_tenants()
+    return jsonify(connected_tenants)
 
 
 
-    return jsonify({"message": "Callback received", "authorisation_code": authorisation_code, "access_token": access_token, "connections": connections})
 
-@app.get("/invoices")
-def fetch_invoices():
-    invoices = get_invoices()
-    return jsonify(invoices)
+
+@app.get("/invoices/<tenant_id>")
+def fetch_invoices(tenant_id):
+    if not tenant_id:
+        return jsonify({"error": "tenantId required"}), 400
+    
+    # on mongoDB invoices have the attribute tenantId
+    filtered_invoices = [invoice for invoice in get_invoices() if invoice["tenantId"] == tenant_id]
+    return jsonify(filtered_invoices)
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "8000"))

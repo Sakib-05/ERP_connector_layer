@@ -13,7 +13,7 @@ mongodb_uri = config.get("MONGODB_URI")
 client = MongoClient(mongodb_uri)
 
 # save access and refresh tokens to the database for persisency and not having to do OAuth flow every time
-def save_tokens_data(access_token, refresh_token, tenant_id = None):
+def save_tokens_data(access_token, refresh_token, connected_tenants):
     try:
         database = client["TaxStar-database"]
         tokens_collection = database["tokens"]
@@ -22,8 +22,8 @@ def save_tokens_data(access_token, refresh_token, tenant_id = None):
             "access_token": access_token,
             "refresh_token": refresh_token
         }
-        if tenant_id:
-            update_data["tenant_id"] = tenant_id
+        if connected_tenants and len(connected_tenants) > 0:
+            update_data["connected_tenants"] = connected_tenants
         
         tokens_collection.update_one({"_id": "xero_auth_tokens"}, {"$set": update_data}, upsert=True)
 
@@ -42,16 +42,33 @@ def get_tokens():
         if saved_tokens_data:
             access_token = saved_tokens_data["access_token"]
             refresh_token = saved_tokens_data["refresh_token"]
-            tenant_id = saved_tokens_data.get("tenant_id")
+            
             # return the tokens
-            return access_token, refresh_token, tenant_id
+            return access_token, refresh_token
         else:
             print("No tokens found in the database.")
-            return None, None, None
+            return None, None
     
     except Exception as e:
         print(f"An error occurred while getting tokens: {e}")
 
+# fetch all connected tenants from the database
+def get_all_tenants():
+    try:
+        database = client["TaxStar-database"]
+        tokens_collection = database["tokens"]
+        saved_tokens_data = tokens_collection.find_one({"_id": "xero_auth_tokens"})
+
+        if saved_tokens_data:
+            connected_tenants = saved_tokens_data.get("connected_tenants", [])
+            return connected_tenants
+        else:
+            print("No tokens found in the database.")
+            return []
+    
+    except Exception as e:
+        print(f"An error occurred while fetching tenants: {e}")
+        return []
 
 # save invoice data to the database by passing invoice json object
 def save_invoice(invoice_data):
@@ -60,6 +77,12 @@ def save_invoice(invoice_data):
         invoices_collection = database["invoices"]
 
         invoice_id = invoice_data.get("InvoiceID")
+
+        # make sure InvoiceID exists to not save corrupted data
+        if not invoice_id:
+            print("ERROR: Invoice missing InvoiceID, cannot save")
+            return 
+
         # update existing invoice if InvoiceID exists, else insert new invoice
         invoices_collection.replace_one({"InvoiceID": invoice_id}, invoice_data, upsert=True)
 
