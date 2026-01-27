@@ -199,6 +199,8 @@ def callback():
     headers = {"Authorization": "Bearer " + access_token, "Content-Type": "application/json"}
     connections_request_response = requests.get("https://api.xero.com/connections", headers=headers)
     connections = connections_request_response.json()
+
+    # only store the tenantId, tenantName and tenantType
     tenants_list = [
         {
             "tenantId": connection.get("tenantId"),
@@ -211,6 +213,7 @@ def callback():
     # store the tokens in the TaxStar database for persisency
     save_tokens_data(access_token, refresh_token, tenants_list)
 
+    # redirect to the frontend myTenants page after successful authentication, but at the moment is is not complete
     frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
     return redirect(f"{frontend_url}/myTenants")
 
