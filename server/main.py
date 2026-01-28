@@ -28,7 +28,8 @@ else:
 app = Flask(__name__)
 # access to invoices and tenants
 CORS(app, resources={r"/invoices/*": {"origins": "http://localhost:3000"}, 
-                     r"/tenants": {"origins": "http://localhost:3000"}})
+                     r"/tenants": {"origins": "http://localhost:3000"},
+                     r"/auth/*": {"origins": "http://localhost:3000"}})
 
 
 # host using github education domain
@@ -217,15 +218,24 @@ def callback():
     frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
     return redirect(f"{frontend_url}/myTenants")
 
+# endpoint to get all connected tenants from the database
 @app.get("/tenants")
 def get_tenants():
     connected_tenants = get_all_tenants()
     return jsonify(connected_tenants)
 
+# endpoint to check if user need to do authentication or not
+
+@app.get("/auth/check")
+def check_authentication():
+    tokens = get_tokens()
+    if tokens:
+        return jsonify({"authenticated": True})
+    else:
+        return jsonify({"authenticated": False})
 
 
-
-
+# endpoint to get all invoices for a specific tenant from the database
 @app.get("/invoices/<tenant_id>")
 def fetch_invoices(tenant_id):
     if not tenant_id:
