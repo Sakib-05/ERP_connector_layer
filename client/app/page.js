@@ -20,17 +20,56 @@ export default function Home() {
     }
   };
 
+  const inputStyle = {
+    width: "100%",
+    padding: "8px",
+    margin: "8px 0",
+    boxSizing: "border-box",
+    borderRadius: "4px",
+    border: "1px solid #ccc",
+  };
+
   const router = useRouter();
   return (
-    <div>
-      <h1 style={{ fontFamily: "Arial, sans-serif" }}>Login Page</h1>
-      <label htmlFor="username">Username:</label>
-      <input type="text" />
-      <label htmlFor="password">Password:</label>
-      <input type="password" />
-      <button type="button" onClick={() => handleLogin()}>
-        Login
-      </button>
+    <div style={{ margin: 0 }}>
+      <header
+        style={{
+          textAlign: "center",
+          padding: "20px",
+          fontFamily: "Arial, sans-serif",
+          fontWeight: "bold",
+          backgroundColor: "#fbc267",
+          margin: "0",
+          fontSize: "24px",
+        }}>
+        ERP CONNECTOR LAYER PROJECT
+      </header>
+      <div
+        style={{
+          border: "1px solid black",
+          padding: "20px",
+          maxWidth: "400px",
+          borderRadius: "8px",
+          margin: "50px auto",
+          fontFamily: "Arial, sans-serif",
+          display: "flex",
+          flexDirection: "column",
+          gap: "5px",
+          backgroundColor: "#fbc5746c",
+        }}>
+        <h1 style={{ fontFamily: "Arial, sans-serif", textAlign: "center" }}>Login Page</h1>
+        <label htmlFor="email">Email:</label>
+        <input type="text" placeholder="enter your email" style={inputStyle} />
+        <br />
+        <label htmlFor="password">Password:</label>
+        <input type="password" placeholder="enter your password" style={inputStyle} />
+        <button
+          style={{ width: "100px", marginInline: " auto", padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
+          type="button"
+          onClick={() => handleLogin()}>
+          Login
+        </button>
+      </div>
     </div>
   );
 }

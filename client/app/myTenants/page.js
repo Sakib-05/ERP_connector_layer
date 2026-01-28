@@ -37,18 +37,42 @@ export default function MyTenants(params) {
 
   return (
     <div>
+      <header
+        style={{
+          textAlign: "center",
+          padding: "20px",
+          fontFamily: "Arial, sans-serif",
+          fontWeight: "bold",
+          backgroundColor: "#fbc267",
+          margin: "0",
+          fontSize: "24px",
+        }}>
+        ERP CONNECTOR LAYER PROJECT
+      </header>
       <h1 style={{ fontFamily: "Arial, sans-serif" }}>My Tenants</h1>
-      <ul>
+      <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
         {tenants.map(tenant => (
-          <li key={tenant.tenantId} style={{ fontFamily: "Arial, sans-serif" }}>
+          <div
+            key={tenant.tenantId}
+            className="tenant-card"
+            style={{
+              fontFamily: "Arial, sans-serif",
+              border: "1px solid black",
+              borderRadius: "8px",
+              backgroundColor: "#ddddddc3",
+              width: "300px",
+              padding: "10px",
+              margin: "10px 0",
+              color: "black",
+            }}>
             <Link href={`/myTenants/${tenant.tenantId}`}>
-              <p>Tenant ID: {tenant.tenantId}</p>
-              <p>Tenant Name: {tenant.tenantName}</p>
-              <p>tenant type: {tenant.tenantType}</p>
+              <h3 style={{ margin: 0, color: "black", padding: "5px", backgroundColor: "#ffffff6c" }}>Tenant Name: {tenant.tenantName}</h3>
+              <p style={{ margin: 0, color: "black", padding: "5px" }}>tenant type: {tenant.tenantType}</p>
+              <p style={{ margin: 0, color: "black", padding: "5px" }}>Tenant ID: {tenant.tenantId}</p>
             </Link>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

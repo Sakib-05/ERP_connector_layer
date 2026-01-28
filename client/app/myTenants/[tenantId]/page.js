@@ -4,11 +4,10 @@ import { usePathname } from "next/navigation";
 import React from "react";
 
 export default function Invoices({ params }) {
-
   // Nextjs 15+ passes params differently, so need to use React.use to get params
   // this is a dynamic folder named `[tenantId]`, so the router will pass the value on
   // `params.tenantId`.
-  const  {tenantId}  = React.use(params);
+  const { tenantId } = React.use(params);
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -60,9 +59,20 @@ export default function Invoices({ params }) {
 
   return (
     <>
+      <header
+        style={{
+          textAlign: "center",
+          padding: "20px",
+          fontFamily: "Arial, sans-serif",
+          fontWeight: "bold",
+          backgroundColor: "#fbc267",
+          margin: "0",
+          fontSize: "24px",
+        }}>
+        ERP CONNECTOR LAYER PROJECT
+      </header>
       <p>Current pathname: {pathname}</p>
 
-      <h1 style={{ fontFamily: "Arial, sans-serif" }}>This is the ERP connector layer frontend</h1>
       {/* columns */}
       {/* Name, SentToContact (true/false need ot change to sent/not sent), InvoiceNumber, Reference, DateString, [CurrencyCode,AmountDue,Total, TotalTax] */}
       <div
@@ -72,7 +82,7 @@ export default function Invoices({ params }) {
           border: "1px solid black",
           borderRadius: "10px",
           padding: "12px",
-          marginInline: "20px",
+          marginInline: "80px",
           columnGap: "12px",
           rowGap: "12px",
         }}>

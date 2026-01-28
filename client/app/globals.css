@@ -1,0 +1,17 @@
+/* Global styles for the app */
+
+/* Tenant card hover/interaction styles */
+.tenant-card {
+	transition: transform 150ms ease;
+	transform: scale(1);
+	will-change: transform;
+	cursor: pointer;
+}
+.tenant-card:hover {
+	transform: scale(1.05);
+}
+.tenant-card a {
+	text-decoration: none;
+	color: inherit;
+}
+
