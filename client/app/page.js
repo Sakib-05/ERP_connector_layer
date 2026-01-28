@@ -5,7 +5,7 @@ export default function Home() {
   const handleLogin = async () => {
     // Call the authentication check endpoint
     try {
-      const response = await fetch("http://localhost:8000/auth/check");
+      const response = await fetch("https://evening-thicket-01409-436e1b971897.herokuapp.com/auth/check");
       const data = await response.json();
 
       if (data.authenticated) {
@@ -13,7 +13,7 @@ export default function Home() {
         router.push("/myTenants");
       } else {
         // If not authenticated, redirect to external authentication URL
-        window.location.href = "http://localhost:8000/auth/login";
+        window.location.href = "https://evening-thicket-01409-436e1b971897.herokuapp.com/auth/login";
       }
     } catch (error) {
       console.error("Error during authentication check:", error);

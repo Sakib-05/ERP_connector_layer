@@ -228,8 +228,9 @@ def get_tenants():
 
 @app.get("/auth/check")
 def check_authentication():
-    tokens = get_tokens()
-    if tokens:
+    # get_tokens() returns (access_token, refresh_token) or (None, None)
+    access_token, refresh_token = get_tokens()
+    if access_token and refresh_token:
         return jsonify({"authenticated": True})
     else:
         return jsonify({"authenticated": False})
