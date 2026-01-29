@@ -103,7 +103,7 @@ export default function Invoices({ params }) {
           <div style={colStyle}>InvoiceNumber</div>
           <div style={colStyle}>Reference</div>
           <div style={colStyle}>Received Date</div>
-          <div style={colStyle}>View</div>
+          <div style={colStyle}>Total</div>
         </div>
 
         {invoices.map(invoice => (
