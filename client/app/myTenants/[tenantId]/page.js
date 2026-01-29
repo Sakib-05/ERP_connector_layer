@@ -11,8 +11,28 @@ export default function Invoices({ params }) {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [tenant, setTenant] = useState(null);
+
 
   const pathname = usePathname();
+
+  async function getTenantData(tenantId) {
+    try {
+      const response = await fetch("https://evening-thicket-01409-436e1b971897.herokuapp.com/tenants");
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log("Response:", data);
+      const tenant = data.find(t => t.tenantId === tenantId);
+      setTenant(tenant);
+    } catch (err) {
+      setError(err.message);
+      console.error("Failed to load tenant data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function loadInvoices() {
     try {
@@ -32,7 +52,10 @@ export default function Invoices({ params }) {
   }
   useEffect(() => {
     // reload this when tenantId changes
-    if (tenantId) loadInvoices();
+    if (tenantId) {
+      loadInvoices();
+      getTenantData(tenantId);
+    }
   }, [tenantId]);
 
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -72,6 +95,15 @@ export default function Invoices({ params }) {
         ERP CONNECTOR LAYER PROJECT
       </header>
       <p>Current pathname: {pathname}</p>
+      {tenant && (
+        <div style={{ padding: "10px", fontFamily: "Arial, sans-serif", backgroundColor: "#f0f0f0", borderRadius: "8px" }}>
+          <h2>Tenant Details</h2>
+          <p><strong>Name:</strong> {tenant.tenantName}</p>
+          <p><strong>Type:</strong> {tenant.tenantType}</p>
+          <p><strong>ID:</strong> {tenant.tenantId}</p>
+        </div>
+      )}
+      <br />
 
       {/* columns */}
       {/* Name, SentToContact (true/false need ot change to sent/not sent), InvoiceNumber, Reference, DateString, [CurrencyCode,AmountDue,Total, TotalTax] */}
