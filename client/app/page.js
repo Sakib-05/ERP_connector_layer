@@ -5,24 +5,37 @@ import { useRouter } from "next/navigation";
 export default function Home() {
   const router = useRouter();
 
-  const handleLogin = async () => {
-    // Call the authentication check endpoint
+  const handleLogin = async event => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const data = {
+      email: formData.get("email"),
+      password: formData.get("password"),
+    };
+    // check if the credentials are correct, if so, send user to their dashboard
     try {
-      const response = await fetch("https://evening-thicket-01409-436e1b971897.herokuapp.com/auth/check");
-      const data = await response.json();
+      const response = await fetch("https://evening-thicket-01409-436e1b971897.herokuapp.com/user/verifyLogin", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
 
-      if (data.authenticated) {
-        // If authenticated, redirect to myTenants page
-        router.push("/myTenants");
+      if (response.ok) {
+        const responseData = await response.json();
+        alert("Login successful!");
+        // is login successful, send user to their dashboard
+        router.push(`/user/${responseData.username}`);
       } else {
-        // If not authenticated, redirect to external authentication URL
-        window.location.href = "https://evening-thicket-01409-436e1b971897.herokuapp.com/auth/login";
+        const errorData = await response.json();
+        alert(`Error: ${errorData.message}`);
       }
     } catch (error) {
-      console.error("Error during authentication check:", error);
+      alert(`An error occurred: ${error.message}`);
     }
   };
-
+  
   const inputStyle = {
     width: "100%",
     padding: "8px",
@@ -46,7 +59,8 @@ export default function Home() {
         }}>
         ERP CONNECTOR LAYER PROJECT
       </header>
-      <div
+      <form
+        onSubmit={handleLogin}
         style={{
           border: "1px solid black",
           padding: "20px",
@@ -61,19 +75,23 @@ export default function Home() {
         }}>
         <h1 style={{ fontFamily: "Arial, sans-serif", textAlign: "center" }}>Login Page</h1>
         <label htmlFor="email">Email:</label>
-        <input type="text" placeholder="enter your email" style={inputStyle} />
+        <input type="text" placeholder="enter your email" style={inputStyle} name="email" required />
         <br />
         <label htmlFor="password">Password:</label>
-        <input type="password" placeholder="enter your password" style={inputStyle} />
+        <input type="password" placeholder="enter your password" style={inputStyle} name="password" required />
         <button
           style={{ width: "100px", marginInline: " auto", padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
-          type="button"
-          onClick={() => handleLogin()}>
+          type="submit">
           Login
         </button>
         {/* section to allow user to create an account */}
-        <p style={{ textAlign: "center", margin: "10px 0" }}>create an account? <Link href="/sign-up" style={{ color: "blue", textDecoration: "underline" }}>sign up here</Link></p>
-      </div>
+        <p style={{ textAlign: "center", margin: "10px 0" }}>
+          create an account?{" "}
+          <Link href="/sign-up" style={{ color: "blue", textDecoration: "underline" }}>
+            sign up here
+          </Link>
+        </p>
+      </form>
     </div>
   );
 }

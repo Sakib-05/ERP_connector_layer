@@ -105,11 +105,11 @@ def get_invoices():
         return []
 
 # check if user aleady exists
-def check_user_exists(email):
+def check_user_login_data(userData):
     try:
         database = client["TaxStar-database"]
         users_collection = database["users"]
-        user = users_collection.find_one({"email": email})
+        user = users_collection.find_one({"email": userData.get("email") , "password": userData.get("password")})
         return user is not None
     
     except Exception as e:

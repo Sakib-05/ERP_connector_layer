@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 # pay attention, requests is plural and it is a library to make http requests
 import requests
 # import database functions
-from db import get_all_tenants, save_invoice, get_invoices, save_tokens_data, get_tokens, check_user_exists, add_user
+from db import get_all_tenants, save_invoice, get_invoices, save_tokens_data, get_tokens, check_user_login_data, add_user
 
 # standard python libraries
 import hmac
@@ -30,11 +30,6 @@ app = Flask(__name__)
 CORS(app, resources={r"/invoices/*": {"origins": "http://localhost:3000"}, 
                      r"/tenants": {"origins": "http://localhost:3000"},
                      r"/auth/*": {"origins": "http://localhost:3000"}})
-
-
-# host using github education domain
-
-
 
 
 def verify_signature():
@@ -70,9 +65,6 @@ def verify_signature():
 
     # standard way to compare signatures
     return hmac.compare_digest(computed_signature, header_signature)
-
-
-
 
 
 @app.get("/")
@@ -133,8 +125,6 @@ def xero_webhook():
 
 
     return {"message": "Xero Webhook received and new invoice added to the database"}
-
-
 
 
 
@@ -251,10 +241,9 @@ def fetch_invoices(tenant_id):
 def create_user():
     # extract the object from the request body and get the email
     request_data = request.get_json()
-    email = request_data.get("email")
 
     # check if user already exists
-    if check_user_exists(email):
+    if check_user_login_data(request_data):
         return jsonify({"error": "user already exists"}), 400
     
     # if user does not exist, create new user in the database
@@ -262,13 +251,17 @@ def create_user():
     
     return jsonify({"message": "user created successfully"})
 
-@app.get("/user/verify/<email>")
-def get_user(email):
-    if not email:
+@app.get("/user/verifyLogin")
+def get_user():
+    userData = request.get_json()
+    if not userData or not userData.get("email"):
         return jsonify({"error": "email required"}), 400
     
-    user_exists = check_user_exists(email)
-    return jsonify({"userExists": user_exists})
+    user_exists = check_user_login_data(userData)
+    if user_exists:
+        return jsonify({"message": "user exists"})
+    else:
+        return jsonify({"error": "user does not exist"}), 404
 
 
 if __name__ == "__main__":

@@ -1,3 +1,5 @@
+'use client';
+
 export default function SignUp(params) {
 
   async function handleSubmit(event) {
@@ -22,6 +24,9 @@ export default function SignUp(params) {
       
       if (response.ok) {
         alert("User created successfully!");
+        // is user created correctly, send user to their dashboard
+        window.location.href = `/user/${data.username}`;
+
       } else {
         const errorData = await response.json();
         alert(`Error: ${errorData.message}`);
@@ -47,6 +52,7 @@ export default function SignUp(params) {
         <h2 style={{ textAlign: "center" }}>Sign Up</h2>
         <form onSubmit={handleSubmit}>
           <input
+            required
             type="text"
             placeholder="Username"
             style={{
@@ -59,6 +65,7 @@ export default function SignUp(params) {
             }}
           />
           <input
+            required
             type="email"
             placeholder="Email"
             style={{
@@ -71,6 +78,7 @@ export default function SignUp(params) {
             }}
           />
           <input
+            required
             type="password"
             placeholder="Password"
             style={{
