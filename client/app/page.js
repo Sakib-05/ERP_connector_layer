@@ -1,7 +1,10 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
+
   const handleLogin = async () => {
     // Call the authentication check endpoint
     try {
@@ -29,7 +32,6 @@ export default function Home() {
     border: "1px solid #ccc",
   };
 
-  const router = useRouter();
   return (
     <div style={{ margin: 0 }}>
       <header
@@ -69,6 +71,8 @@ export default function Home() {
           onClick={() => handleLogin()}>
           Login
         </button>
+        {/* section to allow user to create an account */}
+        <p style={{ textAlign: "center", margin: "10px 0" }}>create an account? <Link href="/sign-up" style={{ color: "blue", textDecoration: "underline" }}>sign up here</Link></p>
       </div>
     </div>
   );

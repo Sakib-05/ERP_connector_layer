@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 # pay attention, requests is plural and it is a library to make http requests
 import requests
 # import database functions
-from db import get_all_tenants, save_invoice, get_invoices, save_tokens_data, get_tokens
+from db import get_all_tenants, save_invoice, get_invoices, save_tokens_data, get_tokens, check_user_exists, add_user
 
 # standard python libraries
 import hmac
@@ -245,6 +245,31 @@ def fetch_invoices(tenant_id):
     # on mongoDB invoices have the attribute tenantId
     filtered_invoices = [invoice for invoice in get_invoices() if invoice["tenantId"] == tenant_id]
     return jsonify(filtered_invoices)
+
+
+@app.route("/user/newUser", methods=["POST"])
+def create_user():
+    # extract the object from the request body and get the email
+    request_data = request.get_json()
+    email = request_data.get("email")
+
+    # check if user already exists
+    if check_user_exists(email):
+        return jsonify({"error": "user already exists"}), 400
+    
+    # if user does not exist, create new user in the database
+    add_user(request_data)
+    
+    return jsonify({"message": "user created successfully"})
+
+@app.get("/user/verify/<email>")
+def get_user(email):
+    if not email:
+        return jsonify({"error": "email required"}), 400
+    
+    user_exists = check_user_exists(email)
+    return jsonify({"userExists": user_exists})
+
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "8000"))

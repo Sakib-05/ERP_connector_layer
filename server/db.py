@@ -104,3 +104,25 @@ def get_invoices():
         print(f"An error occurred while fetching invoices: {e}")
         return []
 
+# check if user aleady exists
+def check_user_exists(email):
+    try:
+        database = client["TaxStar-database"]
+        users_collection = database["users"]
+        user = users_collection.find_one({"email": email})
+        return user is not None
+    
+    except Exception as e:
+        print(f"An error occurred while checking user existence: {e}")
+        return False
+
+
+# add new user to the database with username and password
+def add_user(userData):
+    try:
+        database = client["TaxStar-database"]
+        users_collection = database["users"]
+        users_collection.insert_one(userData)
+    
+    except Exception as e:
+        print(f"An error occurred while adding user: {e}")
