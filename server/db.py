@@ -116,6 +116,16 @@ def check_user_login_data(userData):
         print(f"An error occurred while checking user existence: {e}")
         return False
 
+# check if user with the email already exists in the database to avoid duplicate users
+def check_email_already_inuse(email):
+    try:
+        database = client["TaxStar-database"] 
+        users_collection = database["users"] 
+        user = users_collection.find_one({"email": email}) 
+        return user is not None 
+    except Exception as e: 
+        print(f"An error occurred while checking email existence: {e}") 
+        return False
 
 # add new user to the database with username and password
 def add_user(userData):

@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 # pay attention, requests is plural and it is a library to make http requests
 import requests
 # import database functions
-from db import get_all_tenants, save_invoice, get_invoices, save_tokens_data, get_tokens, check_user_login_data, add_user
+from db import get_all_tenants, save_invoice, get_invoices, save_tokens_data, get_tokens, check_user_login_data, check_email_already_inuse, add_user
 
 # standard python libraries
 import hmac
@@ -243,15 +243,15 @@ def create_user():
     request_data = request.get_json()
 
     # check if user already exists
-    if check_user_login_data(request_data):
-        return jsonify({"error": "user already exists"}), 400
+    if check_email_already_inuse(request_data.get("email")): 
+        return jsonify({"error": "email already in use"}), 400
     
     # if user does not exist, create new user in the database
     add_user(request_data)
     
     return jsonify({"message": "user created successfully"})
 
-@app.get("/user/verifyLogin")
+@app.route("/user/verifyLogin", methods=["POST"])
 def get_user():
     userData = request.get_json()
     if not userData or not userData.get("email"):

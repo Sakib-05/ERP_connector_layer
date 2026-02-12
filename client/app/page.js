@@ -15,7 +15,7 @@ export default function Home() {
     // check if the credentials are correct, if so, send user to their dashboard
     try {
       const response = await fetch("https://evening-thicket-01409-436e1b971897.herokuapp.com/user/verifyLogin", {
-        method: "GET",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -35,7 +35,7 @@ export default function Home() {
       alert(`An error occurred: ${error.message}`);
     }
   };
-  
+
   const inputStyle = {
     width: "100%",
     padding: "8px",
