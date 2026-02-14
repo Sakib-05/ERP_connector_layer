@@ -260,7 +260,8 @@ def get_user():
     
     user_exists = check_user_login_data(userData)
     if user_exists:
-        return jsonify({"message": "user exists", "user": user_exists})
+        username = user_exists.get("username")
+        return jsonify({"message": "user exists", "username": username})
     else:
         return jsonify({"error": "user does not exist"}), 404
 
