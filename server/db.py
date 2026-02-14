@@ -104,13 +104,13 @@ def get_invoices():
         print(f"An error occurred while fetching invoices: {e}")
         return []
 
-# check if user aleady exists
+# check if user aleady exists, if it does return the user data, else return false
 def check_user_login_data(userData):
     try:
         database = client["TaxStar-database"]
         users_collection = database["users"]
         user = users_collection.find_one({"email": userData.get("email") , "password": userData.get("password")})
-        return user is not None
+        return user
     
     except Exception as e:
         print(f"An error occurred while checking user existence: {e}")

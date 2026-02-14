@@ -1,6 +1,8 @@
 "use client";
+import { useState } from "react";
 
 export default function SignUp({ params }) {
+  const [showPassword, setShowPassword] = useState(false);
   async function handleSubmit(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
@@ -133,17 +135,22 @@ export default function SignUp({ params }) {
             id="password"
             name="password"
             required
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder="Password"
             style={{
               width: "100%",
               padding: "8px",
-              margin: "4px 0 12px 0",
+              margin: "4px 0 8px 0",
               boxSizing: "border-box",
               borderRadius: "4px",
               border: "1px solid #ccc",
             }}
           />
+
+          <label style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <input type="checkbox" aria-label="Show password" checked={showPassword} onChange={() => setShowPassword(prev => !prev)} />
+            <span style={{ fontSize: 14 }}>Show password</span>
+          </label>
 
           <button
             type="submit"
