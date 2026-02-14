@@ -29,7 +29,8 @@ app = Flask(__name__)
 # access to invoices and tenants
 CORS(app, resources={r"/invoices/*": {"origins": "http://localhost:3000"}, 
                      r"/tenants": {"origins": "http://localhost:3000"},
-                     r"/auth/*": {"origins": "http://localhost:3000"}})
+                     r"/auth/*": {"origins": "http://localhost:3000"},
+                     r"/user/*": {"origins": "http://localhost:3000"}})
 
 
 def verify_signature():
